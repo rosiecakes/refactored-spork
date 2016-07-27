@@ -1,9 +1,9 @@
 import json
 
 from rest_framework import permissions, viewsets
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 
-from rest_framework import status, views
+from rest_framework import status, views, permissions
 from rest_framework.response import Response
 from authentication.models import Account
 from authentication.permissions import IsAccountOwner
@@ -12,7 +12,7 @@ from authentication.serializers import AccountSerializer
 
 class LoginView(views.APIView):
     def post(self, request, format=None):
-        data = json.loads(request.body)
+        data = json.loads(str(request.body, encoding='utf-8'))
 
         email = data.get('email', None)
         password = data.get('password', None)
@@ -64,3 +64,12 @@ class AccountViewSet(viewsets.ModelViewSet):
             'status': 'Bad request',
             'message': 'Account could not be created with received data.'
         }, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutView(views.APIView):
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def post(self, request, format=None):
+        logout(request)
+
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
